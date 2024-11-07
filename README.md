@@ -1,88 +1,88 @@
 
-# Android Video Compressor
+# MySQL Docker Container with Client for Testing
 
-An Android application that allows users to select, compress, and save videos using FFmpeg without losing quality. This project provides a simple interface for selecting videos, choosing an output directory, and compressing the selected video files on Android.
-
-## Table of Contents
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Building the APK](#building-the-apk)
-- [Contributing](#contributing)
-- [License](#license)
+This repository contains a Docker setup for a MySQL server container that is pre-initialized with a database and sample data. The image also includes the MySQL client, allowing you to easily test and interact with the database from within the container.
 
 ## Features
-- Select videos from device storage.
-- Compress video files to reduce size without significant quality loss.
-- Set output directory for saving compressed videos.
-- Portrait mode layout for ease of use.
+- MySQL Server with a pre-configured database (`mydatabase`)
+- A table `users` with sample data initialized on first run
+- MySQL Client installed within the container for easy testing
 
-## Requirements
-- Android SDK (version 30 or higher)
-- Gradle 7.0.2 or higher
-- Java 11
-- FFmpeg (integrated via Mobile FFmpeg library)
+## Setup Instructions
 
-## Installation
-
-### Clone the Repository
-Clone this repository to your local machine:
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/sallemiahmed/android_video_compressor.git
-cd android_video_compressor
+git clone https://github.com/your-username/mysql-docker.git
+cd mysql-docker
 ```
 
-### Set Up the Android SDK Path
-To ensure Gradle can locate the Android SDK, define the `ANDROID_SDK_ROOT` environment variable or set the SDK path in `local.properties`:
-1. **Using Environment Variable**:
-   ```bash
-   export ANDROID_SDK_ROOT=/path/to/your/android-sdk
-   ```
-2. **Using `local.properties`**:
-   Create a file named `local.properties` in the project root and add the following line:
-   ```properties
-   sdk.dir=/path/to/your/android-sdk
-   ```
+### 2. Initialize Database with SQL Script
 
-### Install Dependencies
-Make sure your dependencies are up-to-date:
+This project includes an `init.sql` file that sets up the database and table, and inserts initial data. The contents of `init.sql` will automatically be executed when the container first starts.
+
+### 3. Build the Docker Image
+Build the Docker image with the following command:
+
 ```bash
-gradle clean
-gradle build
+docker build -t mysql-server-client .
 ```
 
-## Usage
-1. Open the app and click **Select Video** to choose a video file from your storage.
-2. Click **Compress Video** to start the compression process.
-3. The compressed video will be saved in the selected output directory.
+This command creates an image called `mysql-server-client` that includes both the MySQL server and client tools.
 
-## Building the APK
+### 4. Run the Docker Container
+Run the container in detached mode, exposing MySQL’s default port (3306):
 
-To build the APK from the command line:
-1. Navigate to the project root directory:
-   ```bash
-   cd /path/to/android_video_compressor
-   ```
-
-2. Run the Gradle build command:
-   ```bash
-   gradle clean assembleDebug
-   ```
-
-3. The APK file will be generated in:
-   ```
-   app/build/outputs/apk/debug/app-debug.apk
-   ```
-
-### Install the APK
-To install the APK on an emulator or Android device using `adb`:
 ```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
+docker run --name mysql-container -d -p 3306:3306 mysql-server-client
 ```
 
-## Contributing
-Feel free to open issues or submit pull requests to help improve this project. Ensure that you adhere to code style guidelines and thoroughly test your contributions.
+### 5. Verify Initialization
+You can verify that the database and sample data were initialized correctly by running a query directly from within the container.
 
-## License
-This project is open source and available under the [MIT License](LICENSE).
+#### Example Command to Test the Setup
+
+Use the `docker exec` command to run a MySQL query inside the container:
+
+```bash
+docker exec -it mysql-container mysql -umyuser -puserpassword -e "USE mydatabase; SHOW TABLES; SELECT * FROM users;"
+```
+
+This command connects to the MySQL instance within the container and executes:
+1. `SHOW TABLES;` to display available tables.
+2. `SELECT * FROM users;` to show the sample data in the `users` table.
+
+You should see output similar to:
+
+```plaintext
++----+-----------+-----------------+---------------------+
+| id | username  | email           | created_at          |
++----+-----------+-----------------+---------------------+
+| 1  | john_doe  | john@example.com| 2024-11-07 12:00:00 |
+| 2  | jane_doe  | jane@example.com| 2024-11-07 12:00:00 |
++----+-----------+-----------------+---------------------+
+```
+
+## Usage Summary
+
+- **Build Image:** `docker build -t mysql-server-client .`
+- **Run Container:** `docker run --name mysql-container -d -p 3306:3306 mysql-server-client`
+- **Test Data Initialization:**
+  ```bash
+  docker exec -it mysql-container mysql -umyuser -puserpassword -e "USE mydatabase; SHOW TABLES; SELECT * FROM users;"
+  ```
+
+## Stopping and Removing the Container
+To stop and remove the container when you're done, use:
+
+```bash
+docker stop mysql-container
+docker rm mysql-container
+```
+
+## Notes
+- Ensure you replace `myuser` and `userpassword` with your actual user credentials as specified in the Dockerfile if modified.
+- This setup is intended for development and testing. For production, consider more secure configurations and data persistence options.
+
+---
+
+Enjoy using this MySQL Docker container with a built-in client for easy testing and database management!
